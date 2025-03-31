@@ -1,0 +1,99 @@
+{
+	"Resources": {
+		"S3Bucket": {
+			"Type": "AWS::S3::Bucket",
+			"Properties": {
+				"BucketName": "sns-event-task-01"
+			}
+		},
+		"LambdaFunction": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"FunctionName": "sns-event",
+				"Handler": "lambda_function.lambda_handler",
+				"Role": {
+					"Ref": "IamRole"
+				},
+				"Runtime": "python3.8",
+				"Code": {
+					"S3Bucket": "your-lambda-code-bucket",
+					"S3Key": "your-lambda-code.zip"
+				},
+				"Environment": {
+					"Variables": {
+						"SNS_TOPIC_ARN": {
+							"Ref": "SNSTopic"
+						},
+						"S3_BUCKET_NAME": "sns-event-task-01"
+					}
+				}
+			}
+		},
+		"IamRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"RoleName": "Sns-events",
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Service": "lambda.amazonaws.com"
+							},
+							"Action": "sts:AssumeRole"
+						}
+					]
+				},
+				"Policies": [
+					{
+						"PolicyName": "LambdaSNSPolicy",
+						"PolicyDocument": {
+							"Version": "2012-10-17",
+							"Statement": [
+								{
+									"Effect": "Allow",
+									"Action": "sns:Publish",
+									"Resource": {
+										"Ref": "SNSTopic"
+									}
+								}
+							]
+						}
+					},
+					{
+						"PolicyName": "LambdaS3Policy",
+						"PolicyDocument": {
+							"Version": "2012-10-17",
+							"Statement": [
+								{
+									"Effect": "Allow",
+									"Action": [
+										"s3:GetObject",
+										"s3:ListBucket"
+									],
+									"Resource": [
+										"arn:aws:s3:::sns-event-task-01",
+										"arn:aws:s3:::sns-event-task-01/*"
+									]
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		"SNSTopic": {
+			"Type": "AWS::SNS::Topic",
+			"Properties": {
+				"TopicName": "FirstTask",
+				"Subscription": [
+					{
+						"Endpoint": "your-email@example.com",
+						"Protocol": "email"
+					}
+				]
+			}
+		}
+	}
+}
