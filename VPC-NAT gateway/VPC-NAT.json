@@ -1,0 +1,110 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "AWS architecture with VPC, Public & Private Subnets, NAT Gateway, Bastion Host, and EC2 Instances",
+	"Resources": {
+		"VPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": "10.0.0.0/16",
+				"EnableDnsSupport": true,
+				"EnableDnsHostnames": true,
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "MyVPC"
+					}
+				]
+			}
+		},
+		"PublicSubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"CidrBlock": "10.0.1.0/24",
+				"MapPublicIpOnLaunch": true,
+				"AvailabilityZone": "us-east-1a",
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "PublicSubnet"
+					}
+				]
+			}
+		},
+		"PrivateSubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"CidrBlock": "10.0.2.0/24",
+				"AvailabilityZone": "us-east-1a",
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "PrivateSubnet"
+					}
+				]
+			}
+		},
+		"InternetGateway": {
+			"Type": "AWS::EC2::InternetGateway",
+			"Properties": {
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "InternetGateway"
+					}
+				]
+			}
+		},
+		"NATGateway": {
+			"Type": "AWS::EC2::NatGateway",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "PublicSubnet"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "NATGateway"
+					}
+				]
+			}
+		},
+		"BastionHost": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"InstanceType": "t2.micro",
+				"ImageId": "ami-0c55b159cbfafe1f0",
+				"SubnetId": {
+					"Ref": "PublicSubnet"
+				},
+				"SecurityGroupIds": [
+					{
+						"Ref": "BastionSecurityGroup"
+					}
+				],
+				"KeyName": "task-key"
+			}
+		},
+		"PrivateInstance": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"InstanceType": "t2.micro",
+				"ImageId": "ami-0c55b159cbfafe1f0",
+				"SubnetId": {
+					"Ref": "PrivateSubnet"
+				},
+				"SecurityGroupIds": [
+					{
+						"Ref": "PrivateSecurityGroup"
+					}
+				],
+				"KeyName": "task-key"
+			}
+		}
+	}
+}
