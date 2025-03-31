@@ -22,5 +22,22 @@ SNS-Topic ➝ Lambda-Function ➝ S3-Bucket
 
 ___________________________________________________________________________________________________
 
+# *Third Project: VPC-NAT Gateway*
+
+### Project Structure:
+VPC  
+├── Public Subnet   
+│   → Bastion Host (EC2)  
+│   → Internet Gateway (IGW)  
+│   → Route Table (Public)  
+│   → Routes to IGW   
+├── Private Subnet  
+│   → Private EC2 Instance  
+│   → NAT Gateway (For Internet Access)  
+│   → Route Table (Private)  
+│   → Routes to NAT Gateway  
+└── Security Groups  
+    → Bastion Host SG (Allows SSH from the internet)  
+    → Private EC2 SG (Allows SSH only from Bastion Host)  
 
 
