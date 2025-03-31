@@ -1,0 +1,150 @@
+{
+	"Resources": {
+		"URLShortenerAPI": {
+			"Type": "AWS::ApiGateway::RestApi",
+			"Properties": {
+				"Name": "URLShortenerAPI",
+				"Description": "API for URL Shortener",
+				"FailOnWarnings": true
+			}
+		},
+		"APIResource": {
+			"Type": "AWS::ApiGateway::Resource",
+			"Properties": {
+				"ParentId": {
+					"Fn::GetAtt": [
+						"URLShortenerAPI",
+						"RootResourceId"
+					]
+				},
+				"PathPart": "shorten",
+				"RestApiId": {
+					"Ref": "URLShortenerAPI"
+				}
+			}
+		},
+		"APIMethod": {
+			"Type": "AWS::ApiGateway::Method",
+			"Properties": {
+				"AuthorizationType": "NONE",
+				"HttpMethod": "POST",
+				"ResourceId": {
+					"Ref": "APIResource"
+				},
+				"RestApiId": {
+					"Ref": "URLShortenerAPI"
+				},
+				"Integration": {
+					"Type": "AWS_PROXY",
+					"IntegrationHttpMethod": "POST",
+					"Uri": {
+						"Fn::Sub": [
+							"arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${URLShortenerLambda.Arn}/invocations",
+							{}
+						]
+					}
+				}
+			}
+		},
+		"APIDeployment": {
+			"Type": "AWS::ApiGateway::Deployment",
+			"DependsOn": [
+				"APIMethod"
+			],
+			"Properties": {
+				"RestApiId": {
+					"Ref": "URLShortenerAPI"
+				},
+				"StageName": "prod"
+			}
+		},
+		"NewLambdaExecutionRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"RoleName": "NewLambdaExecutionRole",
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Service": "lambda.amazonaws.com"
+							},
+							"Action": "sts:AssumeRole"
+						}
+					]
+				},
+				"Policies": [
+					{
+						"PolicyName": "NewLambdaExecutionPolicy",
+						"PolicyDocument": {
+							"Version": "2012-10-17",
+							"Statement": [
+								{
+									"Effect": "Allow",
+									"Action": [
+										"logs:CreateLogGroup",
+										"logs:CreateLogStream",
+										"logs:PutLogEvents"
+									],
+									"Resource": "*"
+								},
+								{
+									"Effect": "Allow",
+									"Action": [
+										"s3:PutObject",
+										"s3:GetObject"
+									],
+									"Resource": {
+										"Fn::Sub": "arn:aws:s3:::URLShortenerBucket/*"
+									}
+								},
+								{
+									"Effect": "Allow",
+									"Action": [
+										"lambda:InvokeFunction"
+									],
+									"Resource": "*"
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		"URLShortenerLambda": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"FunctionName": "URLShortenerLambda",
+				"Handler": "index.lambda_handler",
+				"Role": {
+					"Fn::GetAtt": [
+						"NewLambdaExecutionRole",
+						"Arn"
+					]
+				},
+				"Runtime": "python3.8",
+				"Code": {
+					"S3Bucket": "your-lambda-code-bucket",
+					"S3Key": "your-lambda-code.zip"
+				}
+			}
+		},
+		"LambdaAPIPermission": {
+			"Type": "AWS::Lambda::Permission",
+			"Properties": {
+				"Action": "lambda:InvokeFunction",
+				"FunctionName": {
+					"Ref": "URLShortenerLambda"
+				},
+				"Principal": "apigateway.amazonaws.com"
+			}
+		},
+		"URLShortenerBucket": {
+			"Type": "AWS::S3::Bucket",
+			"Properties": {
+				"BucketName": "url-shortener-bucket"
+			}
+		}
+	}
+}
