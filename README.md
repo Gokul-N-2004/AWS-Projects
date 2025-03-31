@@ -10,4 +10,9 @@
 
 _________________________________________________________________________________________________
 
+# *Second Project: SNS-Event-Notification*
+
+### Project Structure:
+SNS-Topic ➝ Lambda-Function ➝ S3-Bucket
+
 
