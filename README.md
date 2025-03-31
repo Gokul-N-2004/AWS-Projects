@@ -16,3 +16,7 @@ ________________________________________________________________________________
 SNS-Topic ➝ Lambda-Function ➝ S3-Bucket
 
 
+### Architecture :
+![Image](https://github.com/user-attachments/assets/887a9690-f7cb-4ed2-aa2c-fe2bb84c9743)
+
+
