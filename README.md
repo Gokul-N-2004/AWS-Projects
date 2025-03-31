@@ -40,4 +40,11 @@ VPC
     → Bastion Host SG (Allows SSH from the internet)  
     → Private EC2 SG (Allows SSH only from Bastion Host)  
 
+### Architecture :
+![Image](https://github.com/user-attachments/assets/5b24f876-ceac-4bf6-b50b-9aed22910f40)
+### Output :
+![Image](https://github.com/user-attachments/assets/30fddc0e-1de8-4d95-8d27-7cbfcb7de7fa)
+
+_______________________________________________________________________________________________________
+
 
